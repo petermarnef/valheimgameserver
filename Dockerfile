@@ -1,20 +1,21 @@
-FROM ubuntu:18.04 AS original-dockerfile
+FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Install base dependencies
+
 RUN set -ex; \
-apt-get update; \
-apt-get install -y locales; \
-rm -rf /var/lib/apt/lists/*; \
-localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+    apt-get update -y; \
+    apt-get install -q -y locales; \
+    rm -rf /var/lib/apt/lists/*; \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 ENV LANG en_US.utf8
 
-## Base System
 RUN set -ex; \
-dpkg --add-architecture i386; \
-apt update -y; \
-apt install -y \
+    dpkg --add-architecture i386; \
+    apt-get update -y; \
+    apt-get install -y \
     vim \
     apt-transport-https \
     bc \
@@ -58,6 +59,7 @@ apt install -y \
     postfix \
     python \
     speex:i386 \
+    tar \
     telnet \
     tmux \
     unzip \
@@ -65,49 +67,47 @@ apt install -y \
     wget \
     xz-utils \
     zlib1g \
-    zlib1g:i386; \
-apt-get clean; \
-rm -rf /var/lib/apt/lists/*
+    zlib1g:i386 \
+    cron \
+    gosu; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
-## linuxgsm.sh
-RUN set -ex; \
-wget https://raw.githubusercontent.com/GameServerManagers/LinuxGSM/master/linuxgsm.sh
+# Install linuxgsm
 
-## user config
+RUN wget https://raw.githubusercontent.com/GameServerManagers/LinuxGSM/master/linuxgsm.sh
+
 RUN set -ex; \
-groupadd -g 750 -o linuxgsm; \
-adduser --uid 750 --disabled-password --gecos "" --ingroup linuxgsm linuxgsm; \
-chown linuxgsm:linuxgsm /linuxgsm.sh; \
-chmod +x /linuxgsm.sh; \
-cp /linuxgsm.sh /home/linuxgsm/linuxgsm.sh; \
-usermod -G tty linuxgsm; \
-chown -R linuxgsm:linuxgsm /home/linuxgsm/; \
-chmod 755 /home/linuxgsm
+    groupadd -g 750 -o linuxgsm; \
+    adduser --uid 750 --disabled-password --gecos "" --ingroup linuxgsm linuxgsm; \
+    chown linuxgsm:linuxgsm /linuxgsm.sh; \
+    chmod +x /linuxgsm.sh; \
+    cp /linuxgsm.sh /home/linuxgsm/linuxgsm.sh; \
+    usermod -G tty linuxgsm; \
+    chown -R linuxgsm:linuxgsm /home/linuxgsm/; \
+    chmod 755 /home/linuxgsm
 
 USER linuxgsm
 
 WORKDIR /home/linuxgsm
 
-# need use xterm for LinuxGSM
 ENV TERM=xterm
-
-## Docker Details
 ENV PATH=$PATH:/home/linuxgsm
 
-# CUSTOM STUFF
-FROM original-dockerfile AS withdependencies
+# Install steamcmd
 
 USER root
 
-RUN dpkg --add-architecture i386; apt-get update; apt-get install -y curl wget file tar bzip2 gzip unzip bsdmainutils python util-linux ca-certificates binutils bc jq tmux netcat lib32gcc1 lib32stdc++6; \
-    echo steam steam/question select "I AGREE" | debconf-set-selections; \
+RUN echo steam steam/question select "I AGREE" | debconf-set-selections; \
     echo steam steam/license note '' | debconf-set-selections; \
     dpkg --add-architecture i386; \
-    apt-get -q -y update DEBIAN_FRONTEND=noninteractive; \
-    apt-get install -q -y --no-install-recommends lib32gcc1 steamcmd ca-certificates gosu; \
+    apt-get update -y; \
+    apt-get install -q -y --no-install-recommends steamcmd; \
     ln -sf /usr/games/steamcmd /usr/bin/steamcmd; \
-    DEBIAN_FRONTEND=noninteractive apt-get autoremove -q -y; \
+    apt-get autoremove -q -y; \
     rm -rf /var/lib/apt/lists/*;
+
+# Install vhserver
 
 COPY ./files-used-during-docker-build/vhserverstart.sh .
 RUN chmod +x ./vhserverstart.sh;
@@ -119,6 +119,8 @@ RUN echo 109 | ./linuxgsm.sh install; \
     mkdir valheimgameserverbackup;
 
 COPY ./files-used-during-docker-build/vhserver.cfg ./lgsm/config-lgsm/vhserver/
+
+# Container config
 
 EXPOSE 2456-2458
 

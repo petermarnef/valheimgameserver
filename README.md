@@ -1,4 +1,4 @@
-# Valheim Game Server in Docker
+# Valheim Game Server in Docker on Azure (WIP)
 
 ## To do
 
