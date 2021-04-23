@@ -44,3 +44,7 @@ https://docs.microsoft.com/en-us/azure/container-instances/container-instances-v
 ### Created files during Docker build were not saved
 
 https://stackoverflow.com/questions/47574755/docker-created-files-disappear-between-layers
+
+### Issues with Docker not building correctly?
+
+Try running `docker system prune`, and building again afterwards

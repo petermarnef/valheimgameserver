@@ -1,7 +1,5 @@
 FROM ubuntu:18.04 AS original-dockerfile
 
-# LABEL maintainer="LinuxGSM <me@danielgibbs.co.uk>"
-
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN set -ex; \
@@ -112,12 +110,13 @@ RUN dpkg --add-architecture i386; apt-get update; apt-get install -y curl wget f
     rm -rf /var/lib/apt/lists/*;
 
 COPY ./files-used-during-docker-build/vhserverstart.sh .
-RUN chmod +x ./vhserverstart.sh
+RUN chmod +x ./vhserverstart.sh;
 
 USER linuxgsm
 
 RUN echo 109 | ./linuxgsm.sh install; \
-    printf "Y\nY\nY\n" | vhserver install
+    printf "Y\nY\nY\n" | vhserver install; \
+    mkdir valheimgameserverbackup;
 
 COPY ./files-used-during-docker-build/vhserver.cfg ./lgsm/config-lgsm/vhserver/
 
