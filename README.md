@@ -2,9 +2,16 @@
 
 ## To do
 
-- [ ] Cleanup Dockerfile "Install steam" part for duplicate packages and stuff
-- [ ] Setup backup and do this out of the docker container
-- [ ] Automate linuxgsm and valheimserver updates
+- [ ] Automate backup every night
+- [ ] Make the Azure setup part run in a Docker container so the only dependency on the host is Docker
+- [ ] Update Readme(s) (+ creds to other projects linuxgsm dockerfile + steam install part)
+- [ ] Cleanup the vhserver / docker part of the project
+- [ ] Create a one button push setup (create vhserver docker container + azure setup)
+
+Nice to have:
+
+- [ ] Automate linuxgsm and valheimserver updates (and do a backup right before)
+- [ ] Make this project game server generic (put the game that linuxgsm needs to install in config)
 
 ## How to test locally
 
