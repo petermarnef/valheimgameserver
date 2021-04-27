@@ -109,8 +109,8 @@ RUN echo steam steam/question select "I AGREE" | debconf-set-selections; \
 
 # Install vhserver
 
-COPY ./files-used-during-docker-build/vhserverstart.sh .
-RUN chmod +x ./vhserverstart.sh;
+COPY vhserverstart.sh .
+RUN chmod +x vhserverstart.sh;
 
 USER linuxgsm
 
@@ -118,7 +118,7 @@ RUN echo 109 | ./linuxgsm.sh install; \
     printf "Y\nY\nY\n" | vhserver install; \
     mkdir valheimgameserverbackup;
 
-COPY ./files-used-during-docker-build/vhserver.cfg ./lgsm/config-lgsm/vhserver/
+COPY vhserver.cfg ./lgsm/config-lgsm/vhserver/
 
 # Container config
 

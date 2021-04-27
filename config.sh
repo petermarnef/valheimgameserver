@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Set shared environment variables
 
 LOCATION="westeurope"

@@ -1,1 +1,0 @@
-docker build . -t valheimgameserver:0.1
