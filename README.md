@@ -1,6 +1,6 @@
 # Run a Valheim game server in Azure
 
-> Running a Valheim game server in Azure through an (almost) one-button-push deploy.
+> Running a Valheim game server in Azure with an (almost) one-button-push deploy.
 
 This repository contains scripts to:
 
@@ -8,13 +8,20 @@ This repository contains scripts to:
 2. Create the necessary infrastructure in Azure to run the container
 3. Deploy the container to an Azure container instance
 
+## Good to know
+
+- Everything is setup in 1 Azure resource group, nothing is created outside of this resource group
+- You can easily backup the game server
+- You can easily update the game server
+- Game server management by courtesy of [LinuxGSM](https://linuxgsm.com/)
+
 ## Getting started
 
 Steps to get the Valheim game server up-and-running in Azure:
 
-### Pre-requisites
+### Prerequisites
 
-- Have Docker up and running on your local machine
+- Have Docker up and running on your local machine, and supporting linux containers
   - [How-to install Docker](https://docs.docker.com/get-docker/)
 - Install the Azure CLI and make sure your current terminal window is logged on before running the Azure setup scripts
   - [Install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
@@ -24,8 +31,8 @@ Steps to get the Valheim game server up-and-running in Azure:
 
 ### Setting up the Valheim game server
 
-1. **Configure the Valheim game server** - Set the `servername` and `serverpassword` parameters in the `vhserver.cfg` config file (the password needs to be at least 5 chars long, otherwise the server will not start)
-2. **Configure the Container and Azure settings** - Set the parameters in the `config.sh` file, the most important parameter to change is the name of the `CONTAINER_REGISTRY`
+1. **Set the Valheim game server settings** - Set the `servername` and `serverpassword` parameters in the `vhserver.cfg` config file (the password needs to be at least 5 chars long, otherwise the server will not start)
+2. **Set the Azure settings** - Set the parameters in the `config.sh` file, the most important parameter to change is the name of the `CONTAINER_REGISTRY`
 3. **Run script** `bash ./docker/build-docker-image.sh` - this builds the docker container locally
 4. **Run script** `bash ./azure/create-azure-infrastructure.sh` - this creates the necessary infrastructure in Azure
 5. **Run script** `bash ./azure/push-and-run-docker-container.sh` - this deploys the container to an Azure container registry and boots it up in an Azure container instance
@@ -38,23 +45,27 @@ If all went well, you now have a Valheim game server up and running in Azure :pa
 
 How to play:
 
-1. Get the ip address of the container instance, you can do this by running script `bash ./azure/show-container-instance-ip.sh`
+1. [Get the ip address of the container instance](#get-the-ip-address-of-the-running-container-instance)
 2. Edit the properties of Valheim in Steam and add the following in the `LAUNCH OPTIONS` field: `+connect <ip-address>:2456` (e.g. `+connect 51.138.124.34:2456`) - there is a way to have your game server show up in the Valheim server list, but apparently this is kinda buggy and I have not tried setting it up.
 3. Start Valheim through Steam and provide the password you configured earlier in the `vhserver.cfg` file.
 
-If the password is not accepted and you get a disconnect, something went wrong :-( You can start troubleshooting by seeing [if the server is online](#test-if-your-game-server-works) or [by connecting to the running container intance](#connecting-to-the-running-container-in-azure). If you want to see if the server is running, you can execute the following command `./vhserver details` on the server.
+If the password is not accepted and you get a disconnect, something went wrong :-( You can start troubleshooting by seeing [if the server is online](#test-if-your-game-server-works) or [by connecting to the running container intance](#connecting-to-the-running-container-in-azure) to check the server. If you want to see if the server is running, you can execute the following command `./vhserver details`.
 
 ## LinuxGSM
 
 The software that is used to manage the Valheim game server is called [LinuxGSM](https://linuxgsm.com/). It's a game server management system that supports [several different games](https://docs.linuxgsm.com/game-servers) and provides a lot of funtionality out of the box: server install, backup, monitor, update, etc. It's an open source project that is [available on Github](https://github.com/GameServerManagers/LinuxGSM) and it seems to work really well.
 
-I also borrowed some code from [their own Docker implementation](https://github.com/GameServerManagers/LinuxGSM-Docker).
+I borrowed some code from [their Docker implementation](https://github.com/GameServerManagers/LinuxGSM-Docker).
 
 ## Usefull stuff
 
+### Get the IP address of the running container instance
+
+You can get the IP address by running this script `bash ./azure/show-container-instance-ip.sh`
+
 ### Connecting to the running container in Azure
 
-You can connect to the docker container in Azure by running this script `bash ./azure/connect-with-container-in-azure.sh`.
+You can connect to the docker container in Azure by running this script `bash ./azure/connect-with-container-in-azure.sh`
 
 ### Test if your game server works
 
@@ -68,7 +79,7 @@ You can use this website to check if your Valheim game server works correctly: h
 
 ### Cleaning up in Azure
 
-You can throw away everything that was created in Azure by running this script `bash ./azure/cleanup_azure.sh` - this will remove the entire resource group AND your Valheim game world, so be careful when running this command (see the section below `Backup up the game world locally` to avoid losing any progress).
+You can throw away everything that was created in Azure by running this script `bash ./azure/cleanup_azure.sh` - this will remove the entire resource group **AND your Valheim game world**, so be careful when running this command. See section [Backup the game world locally](#backup-the-game-world-locally) if you want to backup your game world before removing everything in Azure.
 
 ## Backup
 
@@ -76,10 +87,11 @@ The backup procedure is not yet automated, at this moment you need to launch the
 
 1. [Connect to the running container in Azure](#connecting-to-the-running-container-in-azure)
 2. Run this command in the container `./vhserver backup`
+3. The backup will be placed outside of the container on the file share of the created storage account
 
-### Backup up the game world locally
+### Backup the game world locally
 
-The backup is done to the storage account file share that was automatically created. If you go to the storage account and to `File shares` you will find a file share there that contains the backup files (`.tar.gz` files). You can download these files locally, and they contain a complete backup of the server
+The backup is done to the storage account file share that was automatically created. If you go to the storage account and to `File shares` you will find a file share there that contains the backup files (`.tar.gz` files). You can download these files locally, they contain a complete backup of the server
 
 ### Restoring the backup
 
@@ -94,9 +106,9 @@ If you want you can even:
 
 ## Updating the Valheim game server or LinuxGSM
 
-No automation has been setup, but it's pretty simple. Just follow the [instructions from LinuxGSM](https://docs.linuxgsm.com/commands/update).
+No automation has been setup, but it's pretty simple. Just follow [the instructions from LinuxGSM](https://docs.linuxgsm.com/commands/update).
 
-Beware! Backup your game server first. Valheim is still a little buggy, and I had my game world destroyed after an update :-(
+**Beware!** Backup your game server first. Valheim is still a little buggy, and I had my game world destroyed after an update :-(
 
 ## Optimisations
 
@@ -109,13 +121,14 @@ If you would like to contribute, these are the optimisations I have in mind:
 
 Nice to have:
 
+- [ ] Making the game server show up in the browse server list
 - [ ] Add error handling
 - [ ] Automate linuxgsm and valheimserver updates (and do a backup right before)
 - [ ] Make this project game server generic (put the game that linuxgsm needs to install in config)
 
 ## Other Docker Valheim setups
 
-- https://github.com/lloesche/valheim-server-docker/blob/main/Dockerfile
+- https://github.com/lloesche/valheim-server-docker/
 - https://github.com/mbround18/valheim-docker
 
 ## A few issues I encountered
