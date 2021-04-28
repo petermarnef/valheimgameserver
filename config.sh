@@ -10,5 +10,5 @@ STORAGE_ACCOUNT="valheimgameserver"
 STORAGE_ACCOUNT_FILESHARE="valheimgameserverbackup"
 
 DOCKER_CONTAINER="valheimgameserver"
-DOCKER_CONTAINER_TAG="0.1"
+DOCKER_CONTAINER_TAG="1.0"
 DOCKER_CONTAINER_FILESHARE_PATH="/home/linuxgsm/valheimgameserverbackup/"
