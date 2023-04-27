@@ -42,8 +42,8 @@ az container create \
     --image $CONTAINER_REGISTRY.azurecr.io/$DOCKER_CONTAINER:$DOCKER_CONTAINER_TAG \
     --registry-username $CONTAINER_REGISTRY \
     --registry-password $CONTAINER_REGISTRY_KEY \
-    --cpu 4 \
-    --memory 2 \
+    --cpu 1 \
+    --memory 4 \
     --protocol UDP \
     --azure-file-volume-account-name $STORAGE_ACCOUNT \
     --azure-file-volume-account-key $STORAGE_ACCOUNT_KEY \
